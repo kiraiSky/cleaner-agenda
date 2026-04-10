@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d6efd">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>{% block title %}Agenda de Limpezas{% endblock %}</title>
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="icon" href="/static/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="/">
+        <i class="bi bi-house-heart-fill me-1"></i> Limpezas
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="nav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="/">
+              <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'cliente' in (request.endpoint or '') %}active{% endif %}" href="/clientes">
+              <i class="bi bi-people-fill"></i> Clientes
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'agenda' in (request.endpoint or '') or 'limpeza' in (request.endpoint or '') %}active{% endif %}" href="/agenda">
+              <i class="bi bi-calendar3"></i> Agenda
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'pagamento' in (request.endpoint or '') %}active{% endif %}" href="/pagamentos">
+              <i class="bi bi-cash-stack"></i> Pagamentos
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Alertas flash -->
+  <div class="container-fluid mt-2">
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in msgs %}
+        <div class="alert alert-{{ 'success' if cat == 'success' else 'info' }} alert-dismissible fade show mb-2" role="alert">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endwith %}
+  </div>
+
+  <!-- Lembrete banner -->
+  <div id="lembrete-banner" class="d-none container-fluid">
+    <div class="alert alert-warning alert-dismissible fade show mb-2">
+      <i class="bi bi-bell-fill me-1"></i>
+      <strong>Lembrete:</strong> <span id="lembrete-texto"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  </div>
+
+  <!-- Conteúdo principal -->
+  <main class="container-fluid py-3">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Bottom nav (mobile) -->
+  <nav class="bottom-nav d-lg-none">
+    <a href="/" class="bottom-nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+      <i class="bi bi-speedometer2"></i><span>Início</span>
+    </a>
+    <a href="/clientes" class="bottom-nav-item {% if 'cliente' in (request.endpoint or '') %}active{% endif %}">
+      <i class="bi bi-people-fill"></i><span>Clientes</span>
+    </a>
+    <a href="/agenda" class="bottom-nav-item {% if 'agenda' in (request.endpoint or '') or 'limpeza' in (request.endpoint or '') %}active{% endif %}">
+      <i class="bi bi-calendar3"></i><span>Agenda</span>
+    </a>
+    <a href="/pagamentos" class="bottom-nav-item {% if 'pagamento' in (request.endpoint or '') %}active{% endif %}">
+      <i class="bi bi-cash-stack"></i><span>Pagamentos</span>
+    </a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/js/app.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

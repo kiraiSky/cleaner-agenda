@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Agenda de Limpezas{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0"><i class="bi bi-speedometer2 me-1"></i> Dashboard</h4>
+  <span class="text-muted small">{{ hoje.strftime('%d/%m/%Y') }}</span>
+</div>
+
+<!-- Contadores -->
+<div class="row g-2 mb-3">
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100" style="background: linear-gradient(135deg, #9F58FF, #C47AFF);">
+      <div class="card-body p-3 text-white">
+        <div class="fs-2 fw-bold">{{ limpezas_mes }}</div>
+        <div class="small opacity-90">Limpezas este mês</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100" style="background: linear-gradient(135deg, #22C55E, #4ADE80);">
+      <div class="card-body p-3 text-white">
+        <div class="fs-2 fw-bold">{{ '%.0f'|format(total_recebido) }}€</div>
+        <div class="small opacity-90">Total recebido</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100" style="background: {{ 'linear-gradient(135deg, #F472B6, #EC4899)' if total_falta > 0 else 'linear-gradient(135deg, #C5B3FF, #9F58FF)' }};">
+      <div class="card-body p-3 text-white">
+        <div class="fs-2 fw-bold">{{ '%.0f'|format(total_falta) }}€</div>
+        <div class="small opacity-90">Por receber</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100" style="background: linear-gradient(135deg, #F9B8D4, #F472B6);">
+      <div class="card-body p-3 text-white">
+        <div class="fs-2 fw-bold">{{ atrasados|length }}</div>
+        <div class="small opacity-90">Pagamentos em atraso</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Limpezas hoje -->
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-sun-fill text-warning me-1"></i> <strong>Hoje</strong></span>
+    <a href="/limpezas/nova" class="btn btn-sm btn-primary">
+      <i class="bi bi-plus-lg"></i> Nova
+    </a>
+  </div>
+  <div class="card-body p-0">
+    {% if limpezas_hoje %}
+      <ul class="list-group list-group-flush">
+        {% for l in limpezas_hoje %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ l.data_hora.strftime('%H:%M') }}</strong>
+            <span class="ms-2">{{ l.cliente.nome }}</span>
+            {% if l.notas %}<div class="text-muted small">{{ l.notas }}</div>{% endif %}
+          </div>
+          <div class="d-flex gap-1">
+            <form method="post" action="/limpezas/{{ l.id }}/concluir">
+              <button class="btn btn-sm btn-success" title="Concluída">
+                <i class="bi bi-check-lg"></i>
+              </button>
+            </form>
+            <a href="/limpezas/{{ l.id }}/editar" class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-pencil"></i>
+            </a>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted text-center py-3 mb-0">Sem limpezas hoje</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Próximos 7 dias -->
+<div class="card mb-3">
+  <div class="card-header">
+    <i class="bi bi-calendar-week me-1"></i> <strong>Próximos 7 dias</strong>
+  </div>
+  <div class="card-body p-0">
+    {% if proximas %}
+      <ul class="list-group list-group-flush">
+        {% for l in proximas %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <span class="badge bg-primary me-1">{{ l.data_hora.strftime('%a %d/%m') }}</span>
+            <strong>{{ l.data_hora.strftime('%H:%M') }}</strong>
+            <span class="ms-1">{{ l.cliente.nome }}</span>
+          </div>
+          <span class="badge {{ 'bg-success' if l.pagamento and l.pagamento.pago else 'bg-danger' }}">
+            {{ 'Pago' if l.pagamento and l.pagamento.pago else ('%.0f'|format(l.pagamento.valor) + '€') if l.pagamento else '—' }}
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted text-center py-3 mb-0">Sem limpezas agendadas</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Pagamentos em atraso -->
+{% if atrasados %}
+<div class="card border-danger mb-3">
+  <div class="card-header text-bg-danger">
+    <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>Pagamentos em atraso</strong>
+  </div>
+  <div class="card-body p-0">
+    <ul class="list-group list-group-flush">
+      {% for p in atrasados %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ p.limpeza.cliente.nome }}</strong>
+          <div class="text-muted small">{{ p.limpeza.data_hora.strftime('%d/%m/%Y') }}</div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="fw-bold text-danger">{{ '%.2f'|format(p.valor) }}€</span>
+          <form method="post" action="/pagamentos/{{ p.id }}/pagar">
+            <button class="btn btn-sm btn-success">
+              <i class="bi bi-check-lg"></i> Pago
+            </button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

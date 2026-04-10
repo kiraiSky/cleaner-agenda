@@ -1,0 +1,355 @@
+/* ── Variáveis de Design ── */
+:root {
+  --primary:     #9F58FF;
+  --primary-dark:#7C3AE8;
+  --accent-pink: #F9B8D4;
+  --accent-lav:  #C5B3FF;
+  --accent-soft: #EDD9FF;
+  --bg:          #F5F0FF;
+  --surface:     #FFFFFF;
+  --text:        #2D1B69;
+  --text-muted:  #9B8EC4;
+  --border:      #E8DFFF;
+  --radius:      16px;
+  --radius-sm:   10px;
+  --shadow:      0 4px 20px rgba(159,88,255,.10);
+  --shadow-sm:   0 2px 8px rgba(159,88,255,.07);
+}
+
+/* ── Fonte ── */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: linear-gradient(135deg, #F5F0FF 0%, #FDF0F8 100%);
+  min-height: 100vh;
+  padding-bottom: 70px;
+  color: var(--text);
+}
+
+@media (min-width: 992px) {
+  body { padding-bottom: 0; }
+}
+
+/* ── Navbar ── */
+.navbar.bg-primary {
+  background: linear-gradient(90deg, var(--primary) 0%, #C47AFF 100%) !important;
+  box-shadow: 0 2px 16px rgba(159,88,255,.25);
+  border-bottom: none;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.nav-link {
+  font-weight: 500;
+  opacity: 0.85;
+  border-radius: var(--radius-sm);
+  transition: opacity 0.15s, background 0.15s;
+}
+.nav-link:hover, .nav-link.active {
+  opacity: 1;
+  background: rgba(255,255,255,0.15);
+}
+
+/* ── Cards ── */
+.card {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  background: var(--surface);
+}
+
+.card-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0 !important;
+  padding: 0.85rem 1.1rem;
+  font-weight: 600;
+}
+
+.card-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius) !important;
+}
+
+/* ── Botões ── */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, #C47AFF 100%);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(159,88,255,.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+  box-shadow: 0 6px 18px rgba(159,88,255,.45);
+  transform: translateY(-1px);
+}
+.btn-primary:active { transform: translateY(0); }
+
+.btn-outline-primary {
+  color: var(--primary);
+  border-color: var(--primary);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+.btn-outline-primary:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-outline-secondary {
+  border-radius: var(--radius-sm);
+  border-color: var(--border);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.btn-outline-secondary:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent-lav);
+  color: var(--primary);
+}
+
+.btn-outline-danger {
+  border-radius: var(--radius-sm);
+}
+
+.btn-success {
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.btn-sm { border-radius: 8px; }
+
+/* ── Badges ── */
+.badge {
+  font-weight: 500;
+  border-radius: 20px;
+  padding: 0.35em 0.75em;
+}
+.bg-primary { background: var(--primary) !important; }
+.bg-success { background: #22C55E !important; }
+.bg-secondary { background: var(--text-muted) !important; }
+.bg-info { background: var(--accent-lav) !important; color: var(--primary) !important; }
+
+/* ── Formulários ── */
+.form-control, .form-select {
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: #FAFAFF;
+  color: var(--text);
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--accent-lav);
+  box-shadow: 0 0 0 3px rgba(159,88,255,.12);
+  background: #fff;
+}
+.form-label {
+  font-weight: 500;
+  color: var(--text);
+  font-size: 0.875rem;
+}
+.form-label.fw-semibold { font-weight: 600; }
+
+/* ── Alertas flash ── */
+.alert-success {
+  background: linear-gradient(135deg, #E8FFF4, #D1FAE5);
+  border-color: #A7F3D0;
+  color: #065F46;
+  border-radius: var(--radius-sm);
+}
+.alert-info {
+  background: linear-gradient(135deg, var(--accent-soft), #EDE9FF);
+  border-color: var(--accent-lav);
+  color: var(--primary-dark);
+  border-radius: var(--radius-sm);
+}
+.alert-warning {
+  background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
+  border-color: #FDE68A;
+  color: #92400E;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Bottom Nav (mobile) ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 1030;
+  box-shadow: 0 -4px 20px rgba(159,88,255,.10);
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  font-weight: 500;
+  gap: 3px;
+  transition: color 0.15s;
+}
+
+.bottom-nav-item i {
+  font-size: 1.3rem;
+}
+
+.bottom-nav-item.active,
+.bottom-nav-item:hover {
+  color: var(--primary);
+}
+
+/* ── Headings ── */
+h4, h5, h6 {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ── Links ── */
+a { color: var(--primary); }
+a:hover { color: var(--primary-dark); }
+
+/* ── Stat cards no dashboard ── */
+.card .display-6 {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* ── List group ── */
+.list-group-item {
+  border-color: var(--border);
+  color: var(--text);
+}
+
+/* ── Stat Cards ── */
+.stat-card {
+  border: none !important;
+  box-shadow: 0 4px 20px rgba(159,88,255,.20) !important;
+}
+.stat-card .opacity-90 { opacity: 0.9; }
+
+/* ── Formulários ── */
+.card-header {
+  background: linear-gradient(135deg, var(--accent-soft) 0%, #F0EBFF 100%) !important;
+}
+
+.freq-card, .metodo-btn, .estado-btn {
+  margin: 0;
+  padding: 0;
+}
+.freq-card label, .metodo-btn label, .estado-btn label {
+  cursor: pointer;
+  border-radius: 8px !important;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+.freq-card label {
+  display: block;
+  padding: 8px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  background: #FAFAFF;
+  font-size: 0.875rem;
+}
+.freq-card label:hover { border-color: var(--primary); color: var(--primary); }
+.freq-card.active label, .freq-card input:checked + label {
+  border-color: var(--primary) !important;
+  background: var(--accent-soft) !important;
+  color: var(--primary) !important;
+  font-weight: 600;
+}
+
+.btn-outline-primary.active  { background: var(--primary) !important; color: #fff !important; }
+.btn-outline-success.active  { background: #22C55E !important; color: #fff !important; border-color: #22C55E !important; }
+.btn-outline-secondary.active { background: #6c757d !important; color: #fff !important; }
+
+/* Dias da semana */
+.dias-semana-grid {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dia-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: #FAFAFF;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all 0.15s;
+  user-select: none;
+}
+.dia-btn input { display: none; }
+.dia-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--accent-soft); }
+.dia-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(159,88,255,.35);
+}
+
+.input-group-text {
+  background: var(--accent-soft);
+  border-color: var(--border);
+  color: var(--primary);
+}
+
+/* ── FullCalendar ── */
+.fc .fc-button-primary {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  font-family: inherit !important;
+}
+.fc .fc-button-primary:hover {
+  background: var(--primary-dark) !important;
+  border-color: var(--primary-dark) !important;
+}
+.fc .fc-toolbar-title {
+  font-weight: 700;
+  color: var(--text);
+  font-family: inherit;
+}
+.fc .fc-daygrid-day.fc-day-today {
+  background: var(--accent-soft) !important;
+}
+
+@media (max-width: 576px) {
+  .fc .fc-toolbar-title { font-size: 1rem; }
+  .fc .fc-button { padding: 0.2rem 0.5rem; font-size: 0.8rem; }
+  .fc .fc-daygrid-event { font-size: 0.75rem; }
+}
+
+/* ── PWA standalone ── */
+@media (display-mode: standalone) {
+  body { padding-top: env(safe-area-inset-top); }
+  .bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+    height: calc(64px + env(safe-area-inset-bottom));
+  }
+}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ cliente.nome }}{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-3">
+  <a href="/clientes" class="btn btn-outline-secondary btn-sm me-2">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h4 class="mb-0">{{ cliente.nome }}</h4>
+  <a href="/clientes/{{ cliente.id }}/editar" class="btn btn-sm btn-outline-secondary ms-auto">
+    <i class="bi bi-pencil"></i> Editar
+  </a>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="row g-2">
+      {% if cliente.telefone %}
+      <div class="col-6">
+        <div class="text-muted small">Telefone</div>
+        <a href="tel:{{ cliente.telefone }}" class="fw-semibold text-decoration-none">
+          <i class="bi bi-telephone me-1"></i>{{ cliente.telefone }}
+        </a>
+      </div>
+      {% endif %}
+      {% if cliente.morada %}
+      <div class="col-12">
+        <div class="text-muted small">Morada</div>
+        <div><i class="bi bi-geo-alt me-1"></i>{{ cliente.morada }}</div>
+      </div>
+      {% endif %}
+      <div class="col-6">
+        <div class="text-muted small">Frequência</div>
+        <span class="badge bg-primary">{{ cliente.frequencia }}</span>
+        {% if cliente.dia_semana %}
+          <span class="ms-1">{{ cliente.dia_semana }}s</span>
+        {% endif %}
+      </div>
+      <div class="col-6">
+        <div class="text-muted small">Valor habitual</div>
+        <div class="fw-bold">{{ '%.2f'|format(cliente.valor_padrao) }}€</div>
+      </div>
+      {% if cliente.notas %}
+      <div class="col-12">
+        <div class="text-muted small">Notas</div>
+        <div>{{ cliente.notas }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h6 class="mb-0"><i class="bi bi-calendar3 me-1"></i> Histórico de limpezas</h6>
+  <a href="/limpezas/nova?cliente={{ cliente.id }}" class="btn btn-sm btn-primary">
+    <i class="bi bi-plus-lg"></i> Agendar
+  </a>
+</div>
+
+{% if limpezas %}
+<div class="card">
+  <ul class="list-group list-group-flush">
+    {% for l in limpezas %}
+    <li class="list-group-item">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <span class="badge {{ 'bg-success' if l.estado == 'concluida' else 'bg-primary' if l.estado == 'agendada' else 'bg-secondary' }} me-1">
+            {{ l.estado }}
+          </span>
+          <strong>{{ l.data_hora.strftime('%d/%m/%Y %H:%M') }}</strong>
+          {% if l.notas %}<div class="text-muted small">{{ l.notas }}</div>{% endif %}
+        </div>
+        <div class="text-end">
+          {% if l.pagamento %}
+            <span class="badge {{ 'bg-success' if l.pagamento.pago else 'bg-danger' }}">
+              {{ 'Pago' if l.pagamento.pago else 'Por pagar' }}
+            </span>
+            <div class="small">{{ '%.2f'|format(l.pagamento.valor) }}€</div>
+          {% endif %}
+        </div>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% else %}
+<p class="text-muted text-center py-3">Sem limpezas registadas.</p>
+{% endif %}
+{% endblock %}

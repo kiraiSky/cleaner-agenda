@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if limpeza else 'Nova' }} Limpeza{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="/agenda" class="btn btn-outline-secondary btn-sm px-2">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <div>
+    <p class="text-muted small mb-0">Agenda</p>
+    <h4 class="mb-0">{{ 'Editar Limpeza' if limpeza else 'Nova Limpeza' }}</h4>
+  </div>
+</div>
+
+<form method="post">
+  <div class="row g-4">
+
+    <div class="col-12 col-lg-8">
+
+      <!-- Detalhes -->
+      <div class="card mb-4">
+        <div class="card-header d-flex align-items-center gap-2">
+          <i class="bi bi-calendar-check-fill text-primary"></i>
+          <strong>Detalhes da limpeza</strong>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Cliente *</label>
+              <select name="cliente_id" class="form-select" required
+                      id="sel-cliente" onchange="preencherValor()">
+                <option value="">— Selecionar cliente —</option>
+                {% for c in clientes %}
+                <option value="{{ c.id }}" data-valor="{{ c.valor_padrao }}"
+                  {{ 'selected' if (limpeza and limpeza.cliente_id == c.id) or (not limpeza and cliente_pre == c.id|string) }}>
+                  {{ c.nome }}{% if c.morada %} — {{ c.morada }}{% endif %}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12 col-sm-6">
+              <label class="form-label">Data e hora *</label>
+              <input type="datetime-local" name="data_hora" class="form-control" required
+                     value="{{ limpeza.data_hora.strftime('%Y-%m-%dT%H:%M') if limpeza else data_pre }}">
+            </div>
+            <div class="col-12 col-sm-6">
+              <label class="form-label">Duração</label>
+              <select name="duracao_horas" class="form-select">
+                {% for h in [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 8] %}
+                <option value="{{ h }}"
+                  {{ 'selected' if (limpeza and limpeza.duracao_horas == h) or (not limpeza and h == 2) }}>
+                  {% if h == h|int %}{{ h|int }}h{% else %}{{ h|int }}h30{% endif %}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Notas</label>
+              <textarea name="notas" class="form-control" rows="2"
+                        placeholder="Observações específicas para esta limpeza…">{{ limpeza.notas if limpeza else '' }}</textarea>
+            </div>
+            {% if limpeza %}
+            <div class="col-12">
+              <label class="form-label">Estado</label>
+              <div class="d-flex gap-2 flex-wrap">
+                {% for val, label, cls in [('agendada','Agendada','btn-outline-primary'),('concluida','Concluída','btn-outline-success'),('cancelada','Cancelada','btn-outline-secondary')] %}
+                <div class="form-check estado-btn">
+                  <input class="form-check-input visually-hidden" type="radio"
+                         name="estado" id="estado_{{ val }}" value="{{ val }}"
+                         {{ 'checked' if limpeza.estado == val }}
+                         onchange="updateEstado()">
+                  <label class="btn btn-sm {{ cls }} {{ 'active' if limpeza.estado == val }}"
+                         for="estado_{{ val }}">{{ label }}</label>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Coluna lateral -->
+    <div class="col-12 col-lg-4">
+      <div class="card mb-3">
+        <div class="card-header d-flex align-items-center gap-2">
+          <i class="bi bi-credit-card-fill text-primary"></i>
+          <strong>Pagamento</strong>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Valor (€)</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-currency-euro"></i></span>
+              <input type="number" name="valor" id="inp-valor"
+                     class="form-control" min="0" step="0.5"
+                     value="{{ limpeza.pagamento.valor if limpeza and limpeza.pagamento else '0' }}"
+                     placeholder="0">
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Método de pagamento</label>
+            <div class="d-flex gap-2 flex-wrap">
+              {% for val, label, icon in [('dinheiro','Dinheiro','bi-cash'),('transferencia','Transferência','bi-bank'),('outro','Outro','bi-three-dots')] %}
+              <div class="form-check metodo-btn">
+                <input class="form-check-input visually-hidden" type="radio"
+                       name="metodo" id="metodo_{{ val }}" value="{{ val }}"
+                       {{ 'checked' if (limpeza and limpeza.pagamento and limpeza.pagamento.metodo == val) or (not limpeza and val == 'dinheiro') }}
+                       onchange="updateMetodo()">
+                <label class="btn btn-sm btn-outline-secondary {{ 'active' if (limpeza and limpeza.pagamento and limpeza.pagamento.metodo == val) or (not limpeza and val == 'dinheiro') }}"
+                       for="metodo_{{ val }}">
+                  <i class="bi {{ icon }} me-1"></i>{{ label }}
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary py-2">
+          <i class="bi bi-check-lg me-1"></i>{{ 'Guardar alterações' if limpeza else 'Agendar limpeza' }}
+        </button>
+        <a href="/agenda" class="btn btn-outline-secondary">Cancelar</a>
+        {% if limpeza %}
+        <form method="post" action="/limpezas/{{ limpeza.id }}/apagar"
+              onsubmit="return confirm('Apagar esta limpeza?')">
+          <button class="btn btn-outline-danger w-100">
+            <i class="bi bi-trash me-1"></i>Apagar limpeza
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const clienteData = {
+  {% for c in clientes %}
+  "{{ c.id }}": {{ c.valor_padrao }},
+  {% endfor %}
+};
+function preencherValor() {
+  const id = document.getElementById('sel-cliente').value;
+  if (id && clienteData[id] > 0)
+    document.getElementById('inp-valor').value = clienteData[id];
+}
+function updateMetodo() {
+  document.querySelectorAll('.metodo-btn label').forEach(el => {
+    el.classList.toggle('active', el.previousElementSibling?.checked || document.getElementById(el.htmlFor)?.checked);
+  });
+}
+function updateEstado() {
+  document.querySelectorAll('.estado-btn label').forEach(el => {
+    el.classList.toggle('active', document.getElementById(el.htmlFor)?.checked);
+  });
+}
+preencherValor();
+</script>
+{% endblock %}

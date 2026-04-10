@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Agenda{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0"><i class="bi bi-calendar3 me-1"></i> Agenda</h4>
+  <a href="/limpezas/nova" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i> Nova Limpeza
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-body p-2">
+    <div id="calendario"></div>
+  </div>
+</div>
+
+<!-- Modal detalhes -->
+<div class="modal fade" id="modalLimpeza" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal-titulo"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modal-corpo"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/pt.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const cal = new FullCalendar.Calendar(document.getElementById('calendario'), {
+    locale: 'pt',
+    initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,listWeek'
+    },
+    events: '/api/eventos',
+    eventClick: function(info) {
+      const e = info.event;
+      const p = e.extendedProps;
+      document.getElementById('modal-titulo').textContent = e.title;
+      document.getElementById('modal-corpo').innerHTML = `
+        <p><strong>Data:</strong> ${e.start.toLocaleString('pt-PT')}</p>
+        <p><strong>Estado:</strong> <span class="badge" style="background:${e.backgroundColor}">${p.estado}</span></p>
+        <p><strong>Pagamento:</strong> ${p.pago ? '<span class="badge bg-success">Pago</span>' : '<span class="badge bg-danger">Por pagar</span>'} — ${p.valor}€</p>
+        ${p.notas ? `<p><strong>Notas:</strong> ${p.notas}</p>` : ''}
+      `;
+      document.getElementById('modal-footer').innerHTML = `
+        <a href="/limpezas/${e.id}/editar" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-pencil"></i> Editar
+        </a>
+        <form method="post" action="/limpezas/${e.id}/concluir" class="d-inline">
+          <button class="btn btn-success btn-sm"><i class="bi bi-check-lg"></i> Concluída</button>
+        </form>
+        <form method="post" action="/limpezas/${e.id}/apagar" class="d-inline"
+              onsubmit="return confirm('Apagar esta limpeza?')">
+          <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+        </form>
+      `;
+      new bootstrap.Modal(document.getElementById('modalLimpeza')).show();
+    },
+    dateClick: function(info) {
+      window.location.href = `/limpezas/nova?data=${info.dateStr}T09:00`;
+    }
+  });
+  cal.render();
+});
+</script>
+{% endblock %}

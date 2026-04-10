@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if cliente else 'Novo' }} Cliente{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-3 mb-4">
+  <a href="/clientes" class="btn btn-outline-secondary btn-sm px-2">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <div>
+    <p class="text-muted small mb-0">Clientes</p>
+    <h4 class="mb-0">{{ 'Editar Cliente' if cliente else 'Novo Cliente' }}</h4>
+  </div>
+</div>
+
+<form method="post">
+  <div class="row g-4">
+
+    <div class="col-12 col-lg-8">
+
+      <!-- Informação básica -->
+      <div class="card mb-4">
+        <div class="card-header d-flex align-items-center gap-2">
+          <i class="bi bi-person-fill text-primary"></i>
+          <strong>Informação do cliente</strong>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Nome completo *</label>
+              <input type="text" name="nome" class="form-control" required
+                     value="{{ cliente.nome if cliente else '' }}"
+                     placeholder="Ex: Maria Silva">
+            </div>
+            <div class="col-12 col-sm-6">
+              <label class="form-label">Telefone</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                <input type="tel" name="telefone" class="form-control"
+                       value="{{ cliente.telefone if cliente else '' }}"
+                       placeholder="9XX XXX XXX">
+              </div>
+            </div>
+            <div class="col-12 col-sm-6">
+              <label class="form-label">Morada</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                <input type="text" name="morada" class="form-control"
+                       value="{{ cliente.morada if cliente else '' }}"
+                       placeholder="Rua, número, cidade">
+              </div>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Notas internas</label>
+              <textarea name="notas" class="form-control" rows="3"
+                        placeholder="Chave, código da porta, animais, preferências…">{{ cliente.notas if cliente else '' }}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agendamento recorrente -->
+      <div class="card">
+        <div class="card-header d-flex align-items-center gap-2">
+          <i class="bi bi-calendar-week-fill text-primary"></i>
+          <strong>Agendamento recorrente</strong>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Frequência</label>
+              <div class="d-flex gap-2 flex-wrap">
+                {% for val, label in [('pontual','Pontual'),('semanal','Semanal'),('quinzenal','Quinzenal')] %}
+                <div class="form-check freq-card {{ 'active' if (not cliente and val == 'pontual') or (cliente and cliente.frequencia == val) }}">
+                  <input class="form-check-input visually-hidden" type="radio"
+                         name="frequencia" id="freq_{{ val }}" value="{{ val }}"
+                         {{ 'checked' if (not cliente and val == 'pontual') or (cliente and cliente.frequencia == val) }}
+                         onchange="toggleRecorrente()">
+                  <label class="form-check-label" for="freq_{{ val }}">{{ label }}</label>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="col-12" id="div-dias">
+              <label class="form-label">Dias da semana</label>
+              <div class="dias-semana-grid">
+                {% set dias_ativos = (cliente.dia_semana or '').split(',') if cliente and cliente.dia_semana else [] %}
+                {% for val, abrev in [('segunda','Seg'),('terca','Ter'),('quarta','Qua'),('quinta','Qui'),('sexta','Sex'),('sabado','Sáb'),('domingo','Dom')] %}
+                <label class="dia-btn {{ 'active' if val in dias_ativos }}">
+                  <input type="checkbox" name="dia_semana" value="{{ val }}"
+                         {{ 'checked' if val in dias_ativos }}>
+                  <span>{{ abrev }}</span>
+                </label>
+                {% endfor %}
+              </div>
+              <div class="form-text">Seleciona um ou mais dias</div>
+            </div>
+            <div class="col-6 col-sm-3" id="div-hora">
+              <label class="form-label">Hora</label>
+              <input type="time" name="hora_padrao" class="form-control"
+                     value="{{ cliente.hora_padrao if cliente and cliente.hora_padrao else '09:00' }}">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Coluna lateral -->
+    <div class="col-12 col-lg-4">
+      <div class="card mb-3">
+        <div class="card-header d-flex align-items-center gap-2">
+          <i class="bi bi-cash-coin text-primary"></i>
+          <strong>Valor & Estado</strong>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Valor por limpeza (€)</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-currency-euro"></i></span>
+              <input type="number" name="valor_padrao" class="form-control"
+                     min="0" step="0.5"
+                     value="{{ cliente.valor_padrao if cliente else '0' }}"
+                     placeholder="0">
+            </div>
+            <div class="form-text">Valor predefinido para novas limpezas</div>
+          </div>
+          {% if cliente %}
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="ativo" id="ativo"
+                   {{ 'checked' if cliente.ativo }}>
+            <label class="form-check-label" for="ativo">Cliente ativo</label>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary py-2">
+          <i class="bi bi-check-lg me-1"></i>{{ 'Guardar alterações' if cliente else 'Criar cliente' }}
+        </button>
+        <a href="/clientes" class="btn btn-outline-secondary">Cancelar</a>
+      </div>
+    </div>
+
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleRecorrente() {
+  const val = document.querySelector('input[name="frequencia"]:checked').value;
+  const show = val !== 'pontual';
+  ['div-dias','div-hora'].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.opacity = show ? '1' : '0.4';
+    el.style.pointerEvents = show ? '' : 'none';
+  });
+  document.querySelectorAll('.freq-card').forEach(el => {
+    el.classList.toggle('active', el.querySelector('input').checked);
+  });
+}
+toggleRecorrente();
+document.querySelectorAll('input[name="frequencia"]').forEach(i =>
+  i.addEventListener('change', toggleRecorrente)
+);
+
+// Toggle visual dos dias
+document.querySelectorAll('.dia-btn input').forEach(cb => {
+  cb.addEventListener('change', () => {
+    cb.closest('.dia-btn').classList.toggle('active', cb.checked);
+  });
+});
+</script>
+{% endblock %}
