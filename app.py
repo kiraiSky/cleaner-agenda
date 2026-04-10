@@ -336,7 +336,6 @@ def service_worker():
 
 
 if __name__ == '__main__':
-    # Descobrir IP local para acesso pelo telemóvel
     import socket
     hostname = socket.gethostname()
     try:
@@ -346,4 +345,6 @@ if __name__ == '__main__':
     print(f'\n*** Agenda de Limpezas a correr! ***')
     print(f'   PC:        http://localhost:5000')
     print(f'   Telemovel: http://{ip_local}:5000\n')
-    app.run(debug=True, host='0.0.0.0', port=5000, threaded=True)
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('RENDER') is None
+    app.run(debug=debug, host='0.0.0.0', port=port, threaded=True)
