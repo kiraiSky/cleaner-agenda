@@ -1,150 +1,125 @@
 {% extends "base.html" %}
-{% block title %}Dashboard — Agenda de Limpezas{% endblock %}
+{% block title %}Dashboard — CleanDay{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h4 class="mb-0"><i class="bi bi-speedometer2 me-1"></i> Dashboard</h4>
-  <span class="text-muted small">{{ hoje.strftime('%d/%m/%Y') }}</span>
+<!-- Cabeçalho -->
+<div class="dash-header mb-4">
+  <div>
+    <p class="dash-subtitle">Olá 👋</p>
+    <h4 class="dash-title">Hoje, {{ hoje.day }} {{ hoje.strftime('%b') }}</h4>
+  </div>
+  <a href="/limpezas/nova" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i>Nova
+  </a>
 </div>
 
-<!-- Contadores -->
-<div class="row g-2 mb-3">
-  <div class="col-6 col-lg-3">
-    <div class="card stat-card h-100" style="background: var(--green-50); border-color: var(--green-200) !important;">
-      <div class="card-body p-3">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-          <span style="font-size:11px;font-weight:500;color:var(--text-secondary)">Limpezas este mês</span>
-          <i class="bi bi-calendar-check" style="color:var(--green-600);font-size:14px"></i>
+<!-- Stat Cards 2x2 -->
+<div class="row g-2 mb-4">
+  <div class="col-6">
+    <div class="dash-stat" style="background:var(--green-50);border-color:var(--green-200)">
+      <div class="dash-stat-top">
+        <span class="dash-stat-label">Hoje</span>
+        <div class="dash-stat-icon" style="background:var(--green-100);color:var(--green-600)">
+          <i class="bi bi-droplet"></i>
         </div>
-        <div class="fs-2" style="font-family:var(--font-display);color:var(--text-primary);line-height:1.1">{{ limpezas_mes }}</div>
       </div>
+      <div class="dash-stat-value">{{ limpezas_hoje|length }}</div>
+      <div class="dash-stat-sub">limpeza{{ 's' if limpezas_hoje|length != 1 }}</div>
     </div>
   </div>
-  <div class="col-6 col-lg-3">
-    <div class="card stat-card h-100" style="background: var(--green-50); border-color: var(--green-200) !important;">
-      <div class="card-body p-3">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-          <span style="font-size:11px;font-weight:500;color:var(--text-secondary)">Total recebido</span>
-          <i class="bi bi-arrow-up-circle" style="color:var(--green-600);font-size:14px"></i>
+  <div class="col-6">
+    <div class="dash-stat" style="background:#fff;border-color:var(--border)">
+      <div class="dash-stat-top">
+        <span class="dash-stat-label">Esta semana</span>
+        <div class="dash-stat-icon" style="background:var(--sand-100);color:var(--sand-700)">
+          <i class="bi bi-calendar3"></i>
         </div>
-        <div class="fs-2" style="font-family:var(--font-display);color:var(--text-primary);line-height:1.1">{{ '%.0f'|format(total_recebido) }}€</div>
       </div>
+      <div class="dash-stat-value">{{ proximas|length }}</div>
+      <div class="dash-stat-sub">agendada{{ 's' if proximas|length != 1 }}</div>
     </div>
   </div>
-  <div class="col-6 col-lg-3">
-    <div class="card stat-card h-100" style="background: {{ 'oklch(97% 0.02 75)' if total_falta > 0 else 'var(--sand-50)' }}; border-color: var(--sand-200) !important;">
-      <div class="card-body p-3">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-          <span style="font-size:11px;font-weight:500;color:var(--text-secondary)">Por receber</span>
-          <i class="bi bi-clock" style="color:var(--sand-600);font-size:14px"></i>
+  <div class="col-6">
+    <div class="dash-stat" style="background:var(--sand-50);border-color:var(--sand-200)">
+      <div class="dash-stat-top">
+        <span class="dash-stat-label">Receita</span>
+        <div class="dash-stat-icon" style="background:var(--sand-200);color:var(--sand-700)">
+          <i class="bi bi-currency-euro"></i>
         </div>
-        <div class="fs-2" style="font-family:var(--font-display);color:var(--text-primary);line-height:1.1">{{ '%.0f'|format(total_falta) }}€</div>
       </div>
+      <div class="dash-stat-value">{{ '%.0f'|format(total_recebido) }}€</div>
+      <div class="dash-stat-sub">este mês</div>
+      {% if total_recebido > 0 %}
+      <div class="dash-stat-trend">
+        <i class="bi bi-arrow-up"></i> recebido
+      </div>
+      {% endif %}
     </div>
   </div>
-  <div class="col-6 col-lg-3">
-    <div class="card stat-card h-100" style="background: oklch(97% 0.02 75); border-color: oklch(88% 0.04 75) !important;">
-      <div class="card-body p-3">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-          <span style="font-size:11px;font-weight:500;color:var(--text-secondary)">Em atraso</span>
-          <i class="bi bi-exclamation-circle" style="color:oklch(58% 0.12 65);font-size:14px"></i>
+  <div class="col-6">
+    <div class="dash-stat" style="background:#fff;border-color:var(--border)">
+      <div class="dash-stat-top">
+        <span class="dash-stat-label">Por receber</span>
+        <div class="dash-stat-icon" style="background:oklch(94% 0.04 75);color:oklch(52% 0.10 65)">
+          <i class="bi bi-clock"></i>
         </div>
-        <div class="fs-2" style="font-family:var(--font-display);color:var(--text-primary);line-height:1.1">{{ atrasados|length }}</div>
       </div>
+      <div class="dash-stat-value">{{ '%.0f'|format(total_falta) }}€</div>
+      <div class="dash-stat-sub">pendente{{ 's' if atrasados|length != 1 }}</div>
+      {% if atrasados|length > 0 %}
+      <div class="dash-stat-trend" style="color:oklch(52% 0.12 25)">
+        <i class="bi bi-exclamation-circle"></i> {{ atrasados|length }} em atraso
+      </div>
+      {% endif %}
     </div>
-  </div>
-</div>
-
-<!-- Limpezas hoje -->
-<div class="card mb-3">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <span><i class="bi bi-sun-fill text-warning me-1"></i> <strong>Hoje</strong></span>
-    <a href="/limpezas/nova" class="btn btn-sm btn-primary">
-      <i class="bi bi-plus-lg"></i> Nova
-    </a>
-  </div>
-  <div class="card-body p-0">
-    {% if limpezas_hoje %}
-      <ul class="list-group list-group-flush">
-        {% for l in limpezas_hoje %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <strong>{{ l.data_hora.strftime('%H:%M') }}</strong>
-            <span class="ms-2">{{ l.cliente.nome }}</span>
-            {% if l.notas %}<div class="text-muted small">{{ l.notas }}</div>{% endif %}
-          </div>
-          <div class="d-flex gap-1">
-            <form method="post" action="/limpezas/{{ l.id }}/concluir">
-              <button class="btn btn-sm btn-success" title="Concluída">
-                <i class="bi bi-check-lg"></i>
-              </button>
-            </form>
-            <a href="/limpezas/{{ l.id }}/editar" class="btn btn-sm btn-outline-secondary">
-              <i class="bi bi-pencil"></i>
-            </a>
-          </div>
-        </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p class="text-muted text-center py-3 mb-0">Sem limpezas hoje</p>
-    {% endif %}
   </div>
 </div>
 
-<!-- Próximos 7 dias -->
-<div class="card mb-3">
-  <div class="card-header">
-    <i class="bi bi-calendar-week me-1"></i> <strong>Próximos 7 dias</strong>
-  </div>
-  <div class="card-body p-0">
-    {% if proximas %}
-      <ul class="list-group list-group-flush">
-        {% for l in proximas %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <span class="badge bg-primary me-1">{{ l.data_hora.strftime('%a %d/%m') }}</span>
-            <strong>{{ l.data_hora.strftime('%H:%M') }}</strong>
-            <span class="ms-1">{{ l.cliente.nome }}</span>
-          </div>
-          <span class="badge {{ 'bg-success' if l.pagamento and l.pagamento.pago else 'bg-danger' }}">
-            {{ 'Pago' if l.pagamento and l.pagamento.pago else ('%.0f'|format(l.pagamento.valor) + '€') if l.pagamento else '—' }}
-          </span>
-        </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p class="text-muted text-center py-3 mb-0">Sem limpezas agendadas</p>
-    {% endif %}
-  </div>
+<!-- Próximas limpezas -->
+<div class="mb-2 d-flex justify-content-between align-items-center">
+  <h6 class="dash-section-title">Próximas limpezas</h6>
+  <a href="/agenda" class="dash-ver-mais">Ver agenda →</a>
 </div>
 
-<!-- Pagamentos em atraso -->
+<div class="dash-list">
+  {% set todas = limpezas_hoje + proximas %}
+  {% if todas %}
+    {% for l in todas[:8] %}
+    <div class="dash-item">
+      <div class="dash-item-bar" style="background:{{ 'var(--green-400)' if loop.index % 3 == 0 else 'var(--green-600)' if loop.index % 2 == 0 else 'var(--sand-400)' }}"></div>
+      {% set av_colors = [
+        ('var(--green-100)','var(--green-700)'),
+        ('var(--sand-100)','var(--sand-700)'),
+        ('oklch(94% 0.04 240)','oklch(44% 0.12 240)'),
+        ('oklch(94% 0.04 290)','oklch(44% 0.12 290)')
+      ] %}
+      {% set ci = loop.index0 % 4 %}
+      <div class="dash-item-avatar" style="background:{{ av_colors[ci][0] }};color:{{ av_colors[ci][1] }}">
+        {{ l.cliente.nome[:2].upper() }}
+      </div>
+      <div class="dash-item-info">
+        <div class="dash-item-name">{{ l.cliente.nome }}</div>
+        <div class="dash-item-addr">{{ l.cliente.morada or '—' }}</div>
+      </div>
+      <div class="dash-item-time">{{ l.data_hora.strftime('%H:%M') }}</div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="dash-empty">
+      <i class="bi bi-calendar-x"></i>
+      <p>Sem limpezas agendadas</p>
+      <a href="/limpezas/nova" class="btn btn-outline-primary btn-sm">Agendar limpeza</a>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Atraso alert (se houver) -->
 {% if atrasados %}
-<div class="card border-danger mb-3">
-  <div class="card-header text-bg-danger">
-    <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>Pagamentos em atraso</strong>
-  </div>
-  <div class="card-body p-0">
-    <ul class="list-group list-group-flush">
-      {% for p in atrasados %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <div>
-          <strong>{{ p.limpeza.cliente.nome }}</strong>
-          <div class="text-muted small">{{ p.limpeza.data_hora.strftime('%d/%m/%Y') }}</div>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-          <span class="fw-bold text-danger">{{ '%.2f'|format(p.valor) }}€</span>
-          <form method="post" action="/pagamentos/{{ p.id }}/pagar">
-            <button class="btn btn-sm btn-success">
-              <i class="bi bi-check-lg"></i> Pago
-            </button>
-          </form>
-        </div>
-      </li>
-      {% endfor %}
-    </ul>
-  </div>
+<div class="dash-alert mt-3">
+  <i class="bi bi-exclamation-circle-fill"></i>
+  <span>{{ atrasados|length }} pagamento{{ 's' if atrasados|length != 1 }} em atraso</span>
+  <a href="/pagamentos?filtro=por_pagar" class="dash-alert-link">Ver →</a>
 </div>
 {% endif %}
+
 {% endblock %}
