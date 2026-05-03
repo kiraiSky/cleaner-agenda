@@ -32,6 +32,7 @@ class Limpeza(db.Model):
     duracao_horas = db.Column(db.Float, default=2.0)
     notas = db.Column(db.Text)
     estado = db.Column(db.String(20), default='agendada')  # agendada, concluida, cancelada
+    google_event_id = db.Column(db.String(100))
     criado_em = db.Column(db.DateTime, default=datetime.utcnow)
 
     pagamento = db.relationship('Pagamento', backref='limpeza', uselist=False, cascade='all, delete-orphan')

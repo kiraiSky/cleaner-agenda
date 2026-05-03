@@ -1,13 +1,20 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, session
 from database import db, init_db
 from models import Cliente, Limpeza, Pagamento
 from datetime import datetime, timedelta, date
 import os
 
+# Carregar variáveis de ambiente do .env se existir
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agenda.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = 'agenda-limpezas-secret-2024'
+app.secret_key = os.environ.get('SECRET_KEY', 'agenda-limpezas-secret-2024')
 
 init_db(app)
 
@@ -175,7 +182,12 @@ def cliente_detalhe(id):
 @app.route('/agenda')
 def agenda():
     clientes_ativos = Cliente.query.filter_by(ativo=True).order_by(Cliente.nome).all()
-    return render_template('agenda.html', clientes=clientes_ativos)
+    try:
+        from google_calendar import is_connected
+        google_connected = is_connected()
+    except Exception:
+        google_connected = False
+    return render_template('agenda.html', clientes=clientes_ativos, google_connected=google_connected)
 
 
 @app.route('/api/eventos')
@@ -220,6 +232,8 @@ def limpeza_nova():
         )
         db.session.add(pagamento)
         db.session.commit()
+        _sync_limpeza_auto(limpeza)
+        db.session.commit()
         flash('Limpeza agendada!', 'success')
         return redirect(url_for('agenda'))
     clientes_ativos = Cliente.query.filter_by(ativo=True).order_by(Cliente.nome).all()
@@ -242,6 +256,8 @@ def limpeza_editar(id):
             limpeza.pagamento.valor = float(request.form.get('valor', 0) or 0)
             limpeza.pagamento.metodo = request.form.get('metodo', 'dinheiro')
         db.session.commit()
+        _sync_limpeza_auto(limpeza)
+        db.session.commit()
         flash('Limpeza atualizada!', 'success')
         return redirect(url_for('agenda'))
     clientes_ativos = Cliente.query.filter_by(ativo=True).order_by(Cliente.nome).all()
@@ -260,6 +276,7 @@ def limpeza_concluir(id):
 @app.route('/limpezas/<int:id>/apagar', methods=['POST'])
 def limpeza_apagar(id):
     limpeza = Limpeza.query.get_or_404(id)
+    _delete_event_auto(limpeza)
     db.session.delete(limpeza)
     db.session.commit()
     flash('Limpeza removida.', 'info')
@@ -326,6 +343,93 @@ def api_lembretes():
             'minutos': int((l.data_hora - agora).total_seconds() / 60)
         })
     return jsonify(resultado)
+
+
+# ─── Google Calendar ─────────────────────────────────────────
+@app.route('/google/auth')
+def google_auth():
+    """Inicia o fluxo OAuth2 com o Google."""
+    try:
+        from google_calendar import get_flow
+        redirect_uri = url_for('google_callback', _external=True)
+        flow = get_flow(redirect_uri)
+        auth_url, state = flow.authorization_url(
+            access_type='offline',
+            include_granted_scopes='true',
+            prompt='consent'
+        )
+        session['google_oauth_state'] = state
+        return redirect(auth_url)
+    except Exception as e:
+        flash(f'Erro ao iniciar autenticação Google: {str(e)}', 'danger')
+        return redirect(url_for('agenda'))
+
+
+@app.route('/google/callback')
+def google_callback():
+    """Callback OAuth2 — guarda o token."""
+    try:
+        from google_calendar import get_flow, save_credentials
+        redirect_uri = url_for('google_callback', _external=True)
+        flow = get_flow(redirect_uri)
+        flow.fetch_token(authorization_response=request.url)
+        save_credentials(flow.credentials)
+        flash('Google Agenda ligada com sucesso! 🎉', 'success')
+    except Exception as e:
+        flash(f'Erro na autenticação: {str(e)}', 'danger')
+    return redirect(url_for('agenda'))
+
+
+@app.route('/google/sync', methods=['POST'])
+def google_sync():
+    """Sincroniza todas as limpezas agendadas para o Google Calendar."""
+    try:
+        from google_calendar import sync_all, is_connected
+        if not is_connected():
+            flash('Não estás ligado ao Google. Liga primeiro.', 'danger')
+            return redirect(url_for('agenda'))
+        limpezas = Limpeza.query.filter(Limpeza.estado != 'cancelada').all()
+        sucesso, falha = sync_all(limpezas)
+        db.session.commit()
+        if falha == 0:
+            flash(f'✓ {sucesso} limpeza(s) sincronizada(s) com o Google Agenda!', 'success')
+        else:
+            flash(f'✓ {sucesso} sincronizadas, {falha} com erro.', 'info')
+    except Exception as e:
+        flash(f'Erro na sincronização: {str(e)}', 'danger')
+    return redirect(url_for('agenda'))
+
+
+@app.route('/google/disconnect', methods=['POST'])
+def google_disconnect():
+    """Remove a ligação com o Google."""
+    import os
+    if os.path.exists('token.json'):
+        os.remove('token.json')
+    flash('Google Agenda desligada.', 'info')
+    return redirect(url_for('agenda'))
+
+
+def _sync_limpeza_auto(limpeza):
+    """Sincroniza automaticamente se estiver ligado ao Google."""
+    try:
+        from google_calendar import is_connected, sync_limpeza
+        if is_connected():
+            event_id = sync_limpeza(limpeza)
+            if event_id:
+                limpeza.google_event_id = event_id
+    except Exception:
+        pass
+
+
+def _delete_event_auto(limpeza):
+    """Apaga o evento do Google Calendar se existir."""
+    try:
+        from google_calendar import delete_event
+        if limpeza.google_event_id:
+            delete_event(limpeza.google_event_id)
+    except Exception:
+        pass
 
 
 # ─── Service Worker (PWA) ─────────────────────────────────────
