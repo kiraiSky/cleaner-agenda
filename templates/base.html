@@ -81,7 +81,7 @@
   <!-- Bottom nav (mobile) -->
   <nav class="bottom-nav d-lg-none">
     <a href="/" class="bottom-nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
-      <i class="bi bi-speedometer2"></i><span>Início</span>
+      <i class="bi bi-grid-fill"></i><span>Início</span>
     </a>
     <a href="/clientes" class="bottom-nav-item {% if 'cliente' in (request.endpoint or '') %}active{% endif %}">
       <i class="bi bi-people-fill"></i><span>Clientes</span>
@@ -90,7 +90,7 @@
       <i class="bi bi-calendar3"></i><span>Agenda</span>
     </a>
     <a href="/pagamentos" class="bottom-nav-item {% if 'pagamento' in (request.endpoint or '') %}active{% endif %}">
-      <i class="bi bi-cash-stack"></i><span>Pagamentos</span>
+      <i class="bi bi-currency-dollar"></i><span>Finanças</span>
     </a>
   </nav>
 

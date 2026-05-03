@@ -420,13 +420,13 @@ a:hover { color: var(--green-700); }
   position: fixed;
   bottom: 0; left: 0; right: 0;
   height: 64px;
-  background: rgba(255,255,255,0.96);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid var(--border);
   display: flex;
   z-index: 1030;
-  box-shadow: 0 -1px 0 var(--border), 0 -4px 16px oklch(20% 0.02 120 / 0.04);
+  box-shadow: 0 -1px 0 var(--border), 0 -8px 24px oklch(20% 0.02 120 / 0.05);
 }
 .bottom-nav-item {
   flex: 1;
@@ -441,9 +441,30 @@ a:hover { color: var(--green-700); }
   gap: 3px;
   transition: color 0.15s;
   letter-spacing: -0.01em;
+  position: relative;
+  padding-top: 2px;
 }
-.bottom-nav-item i { font-size: 1.2rem; }
-.bottom-nav-item.active, .bottom-nav-item:hover { color: var(--green-600); }
+.bottom-nav-item i {
+  font-size: 1.25rem;
+  transition: transform 0.15s;
+}
+.bottom-nav-item span {
+  font-size: 10px;
+  font-weight: 500;
+}
+.bottom-nav-item:hover { color: var(--green-600); }
+.bottom-nav-item:hover i { transform: translateY(-1px); }
+.bottom-nav-item.active { color: var(--green-700); }
+.bottom-nav-item.active i { font-size: 1.35rem; }
+.bottom-nav-item.active span { font-weight: 600; }
+.bottom-nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 25%; right: 25%;
+  height: 2.5px;
+  background: var(--green-600);
+  border-radius: 0 0 3px 3px;
+}
 
 /* ══════════════════════════════════════
    LIST GROUPS
